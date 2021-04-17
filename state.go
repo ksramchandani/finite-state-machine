@@ -12,4 +12,5 @@ const (
 	StateTransactionFailed StateType = "StateTransactionFailed"
 	StateOrderShipped      StateType = "StateOrderShipped"
 	StateError             StateType = "StateError"
+	StateEnd               StateType = "StateEnd"
 )

@@ -60,16 +60,49 @@ func NewStateMachine() *StateMachine {
 	return &StateMachine{
 		Current: StateInitial,
 		StateTransitionMap: StateTransitionMap{
+
 			StateInitial: Transition{
 				EventToNextStateMap: EventToNextStateMap{
 					EventOrderCreated: StateOrderCreated,
 				},
 			},
+
 			StateOrderCreated: Transition{
 				Action: new(ActionCreateOrder),
 				EventToNextStateMap: EventToNextStateMap{
 					EventOrderPlaced: StateOrderPlaced,
 					EventOrderFailed: StateOrderFailed,
+				},
+			},
+
+			StateOrderFailed: Transition{
+				EventToNextStateMap: EventToNextStateMap{
+					EventNoOP: StateEnd,
+				},
+			},
+
+			StateOrderPlaced: Transition{
+				EventToNextStateMap: EventToNextStateMap{
+					EventChargeCard: StateCharingCard,
+				},
+			},
+
+			StateCharingCard: Transition{
+				EventToNextStateMap: EventToNextStateMap{
+					EventTransactionFailed: StateTransactionFailed,
+					EventOrderShipped:      StateOrderShipped,
+				},
+			},
+
+			StateTransactionFailed: Transition{
+				EventToNextStateMap: EventToNextStateMap{
+					EventNoOP: StateEnd,
+				},
+			},
+
+			StateOrderShipped: Transition{
+				EventToNextStateMap: EventToNextStateMap{
+					EventNoOP: StateEnd,
 				},
 			},
 		},
