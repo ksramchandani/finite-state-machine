@@ -32,7 +32,6 @@ func (s *StateMachine) SendEvent(event EventType, eventCtx EventContext) error {
 	defer s.mutex.Unlock()
 
 	for {
-		separator()
 		fmt.Printf("In Current state = %v\n", s.Current)
 		nextState, err := s.GetNextState(event)
 		if err != nil {
@@ -75,8 +74,4 @@ func NewStateMachine() *StateMachine {
 			},
 		},
 	}
-}
-
-func separator() {
-	fmt.Printf("===================================\n")
 }
