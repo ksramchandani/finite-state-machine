@@ -19,5 +19,6 @@ type EventToNextStateMap map[EventType]StateType
 
 type OrderCreateContext struct {
 	items []string
+	card  string
 	err   error
 }

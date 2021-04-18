@@ -6,15 +6,63 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var (
-	stateMachine = NewStateMachine()
-)
+func TestValidWorkflow(t *testing.T) {
+	stateMachine := NewStateMachine()
 
-func TestCreateFailedWorkflow(t *testing.T) {
-	invalidOrder := OrderCreateContext{}
+	order := OrderCreateContext{
+		items: []string{"a", "b", "c"},
+		card:  "1111222233334444",
+	}
 
-	err := stateMachine.SendEvent(EventOrderCreated, &invalidOrder)
-	assert.NotNil(t, err)
-	assert.Equal(t, err.Error(), "No transition exists")
+	stateTransitions := []StateType{}
+	expectedStateTransitions := []StateType{
+		StateInitial,
+		StateOrderCreated,
+		StateOrderPlaced,
+		StateChargingCard,
+		StateOrderShipped,
+	}
+
+	err := stateMachine.SendEvent(EventOrderCreated, &order, &stateTransitions)
+	assert.Equal(t, stateTransitions, expectedStateTransitions)
+	assert.Nil(t, err)
+}
+
+func TestOrderFailedWorkflow(t *testing.T) {
+	stateMachine := NewStateMachine()
+
+	order := OrderCreateContext{}
+
+	stateTransitions := []StateType{}
+	expectedStateTransitions := []StateType{
+		StateInitial,
+		StateOrderCreated,
+		StateOrderFailed,
+	}
+
+	err := stateMachine.SendEvent(EventOrderCreated, &order, &stateTransitions)
+	assert.Equal(t, expectedStateTransitions, stateTransitions)
+	assert.Nil(t, err)
+}
+
+func TestFailedTransactions(t *testing.T) {
+	stateMachine := NewStateMachine()
+
+	order := OrderCreateContext{
+		items: []string{"a", "b", "c"},
+	}
+
+	stateTransitions := []StateType{}
+	expectedStateTransitions := []StateType{
+		StateInitial,
+		StateOrderCreated,
+		StateOrderPlaced,
+		StateChargingCard,
+		StateTransactionFailed,
+	}
+
+	err := stateMachine.SendEvent(EventOrderCreated, &order, &stateTransitions)
+	assert.Equal(t, stateTransitions, expectedStateTransitions)
+	assert.Nil(t, err)
 
 }

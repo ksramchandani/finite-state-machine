@@ -8,7 +8,7 @@ const (
 	StateOrderCreated      StateType = "StateOrderCreated"
 	StateOrderFailed       StateType = "StateOrderFailed"
 	StateOrderPlaced       StateType = "StateOrderPlaced"
-	StateCharingCard       StateType = "StateCharingCard"
+	StateChargingCard      StateType = "StateChargingCard"
 	StateTransactionFailed StateType = "StateTransactionFailed"
 	StateOrderShipped      StateType = "StateOrderShipped"
 	StateError             StateType = "StateError"

@@ -26,18 +26,17 @@ func (s *StateMachine) GetNextState(event EventType) (StateType, error) {
 	return nextState, nil
 }
 
-func (s *StateMachine) SendEvent(event EventType, eventCtx EventContext) error {
+func (s *StateMachine) SendEvent(event EventType, eventCtx EventContext, stateTransitions *[]StateType) error {
 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
 	for {
-		fmt.Printf("In Current state = %v\n", s.Current)
+		*stateTransitions = append(*stateTransitions, s.Current)
 		nextState, err := s.GetNextState(event)
 		if err != nil {
 			return err
 		}
-		fmt.Printf("Got next state = %v\n", nextState)
 
 		transition, ok := s.StateTransitionMap[nextState]
 		if !ok {
@@ -46,8 +45,10 @@ func (s *StateMachine) SendEvent(event EventType, eventCtx EventContext) error {
 
 		s.Previous = s.Current
 		s.Current = nextState
+		fmt.Printf("%v --> %v\n", s.Previous, s.Current)
 		nextEvent := transition.Action.Execute(eventCtx)
 		if nextEvent == EventNoOP {
+			*stateTransitions = append(*stateTransitions, s.Current)
 			return nil
 		}
 
@@ -68,7 +69,7 @@ func NewStateMachine() *StateMachine {
 			},
 
 			StateOrderCreated: Transition{
-				Action: new(ActionCreateOrder),
+				Action: new(ActionOrderCreated),
 				EventToNextStateMap: EventToNextStateMap{
 					EventOrderPlaced: StateOrderPlaced,
 					EventOrderFailed: StateOrderFailed,
@@ -76,18 +77,21 @@ func NewStateMachine() *StateMachine {
 			},
 
 			StateOrderFailed: Transition{
+				Action: new(ActionOrderFailed),
 				EventToNextStateMap: EventToNextStateMap{
 					EventNoOP: StateEnd,
 				},
 			},
 
 			StateOrderPlaced: Transition{
+				Action: new(ActionOrderPlaced),
 				EventToNextStateMap: EventToNextStateMap{
-					EventChargeCard: StateCharingCard,
+					EventChargeCard: StateChargingCard,
 				},
 			},
 
-			StateCharingCard: Transition{
+			StateChargingCard: Transition{
+				Action: new(ActionCharingCard),
 				EventToNextStateMap: EventToNextStateMap{
 					EventTransactionFailed: StateTransactionFailed,
 					EventOrderShipped:      StateOrderShipped,
@@ -95,12 +99,14 @@ func NewStateMachine() *StateMachine {
 			},
 
 			StateTransactionFailed: Transition{
+				Action: new(ActionTransactionFailed),
 				EventToNextStateMap: EventToNextStateMap{
 					EventNoOP: StateEnd,
 				},
 			},
 
 			StateOrderShipped: Transition{
+				Action: new(ActionOrderShipped),
 				EventToNextStateMap: EventToNextStateMap{
 					EventNoOP: StateEnd,
 				},
